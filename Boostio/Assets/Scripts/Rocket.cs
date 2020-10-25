@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class Rocket : MonoBehaviour
 {
-    Rigidbody rigidbody;
+    private Rigidbody rigidbody;
+    private AudioSource audioSource;
 
-    void Start() { rigidbody = GetComponent<Rigidbody>(); }
+    void Start()
+    {
+        rigidbody = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -17,19 +22,22 @@ public class Rocket : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Space))
         {
-            //print("Thrusting");
+            // thrust rocket 
             rigidbody.AddRelativeForce(Vector3.up);
+            // play thrust sfx
+            if (!audioSource.isPlaying) { audioSource.Play(); }
         }
+        else if (audioSource.isPlaying) { audioSource.Stop(); }
 
         if (Input.GetKey(KeyCode.A))
         {
-            //print("Left");
-            // TODO: make rocket rotate left 
+            // rotate left 
+            transform.Rotate(Vector3.forward);
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            //print("Right");
-            // TODO: make rocket rotate right 
+            // rotate right 
+            transform.Rotate(-Vector3.forward);
         }
     }
 }
