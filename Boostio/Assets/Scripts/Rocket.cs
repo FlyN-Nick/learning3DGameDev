@@ -43,10 +43,10 @@ public class Rocket : MonoBehaviour
 
     private void Thrust()
     {
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow))
         {
             // thrust rocket 
-            rigidBody.AddRelativeForce(Vector3.up*mainThrust);
+            rigidBody.AddRelativeForce(Vector3.up * mainThrust);
             // play thrust sfx
             if (!audioSource.isPlaying) { audioSource.Play(); }
         }
@@ -58,12 +58,12 @@ public class Rocket : MonoBehaviour
         rigidBody.freezeRotation = true; // take manual control of rotation
 
         float rotSpeed = rcsThrust * Time.deltaTime;
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
             // rotate left
             transform.Rotate(Vector3.forward*rotSpeed);
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             // rotate right 
             transform.Rotate(Vector3.back*rotSpeed);
