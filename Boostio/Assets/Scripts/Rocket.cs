@@ -3,6 +3,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[DisallowMultipleComponent]
 public class Rocket : MonoBehaviour
 {
     [SerializeField] private float rcsThrust = 100f;

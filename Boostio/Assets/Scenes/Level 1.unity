@@ -1662,14 +1662,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Launchpad
       objectReference: {fileID: 0}
-    - target: {fileID: 7722927120122400782, guid: 2c613bd6ce8a149c182b725d2ddc691e, type: 3}
-      propertyPath: m_TagString
-      value: Friendly
-      objectReference: {fileID: 0}
-    - target: {fileID: 7722927120122400816, guid: 2c613bd6ce8a149c182b725d2ddc691e, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 4bac9e7ee4bb94d4cb743c5a5b9fadc3, type: 2}
     - target: {fileID: 7722927120122400818, guid: 2c613bd6ce8a149c182b725d2ddc691e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
