@@ -7,9 +7,14 @@ public class Rocket : MonoBehaviour
 {
     [SerializeField] private float rcsThrust = 100f;
     [SerializeField] private float mainThrust = 100f;
+
     [SerializeField] private AudioClip engineThrustSFX;
     [SerializeField] private AudioClip deathSFX;
     [SerializeField] private AudioClip successSFX;
+
+    [SerializeField] private ParticleSystem engineVFX;
+    [SerializeField] private ParticleSystem deathVFX;
+    [SerializeField] private ParticleSystem successVFX;
 
     private Rigidbody rigidBody;
     private AudioSource audioSource;
@@ -48,13 +53,17 @@ public class Rocket : MonoBehaviour
             case "Finish":
                 // TODO: next level or level screen?
                 state = State.transcending;
+                //if (audioSource.isPlaying) { audioSource.Stop(); }
                 audioSource.PlayOneShot(successSFX);
+                successVFX.Play();
                 Invoke("LoadNextLevel", 1f);
                 break;
             default:
                 // TODO: first level or level screen?
                 state = State.dead;
+                //if (audioSource.isPlaying) { audioSource.Stop(); }
                 audioSource.PlayOneShot(deathSFX);
+                deathVFX.Play();
                 Invoke("LoadFirstLevel", 1f);
                 break;
         }
@@ -75,8 +84,10 @@ public class Rocket : MonoBehaviour
             rigidBody.AddRelativeForce(Vector3.up * mainThrust);
             // play thrust sfx
             if (!audioSource.isPlaying) { audioSource.PlayOneShot(engineThrustSFX); }
+            // play thrust vfx
+            if (!engineVFX.isPlaying) { engineVFX.Play(); }
         }
-        else if (audioSource.isPlaying) { audioSource.Stop(); }
+        else if (audioSource.isPlaying) { audioSource.Stop(); engineVFX.Stop(); }
     }
 
     private void Rotate()
