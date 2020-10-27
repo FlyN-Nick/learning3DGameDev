@@ -409,7 +409,7 @@ Transform:
   m_GameObject: {fileID: 6040532155927347822}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_Children:
   - {fileID: 6040532154834198720}
   - {fileID: 6040532154432538393}
@@ -428,7 +428,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 49fafd913c3d146b18826b14f0d037df, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -527,7 +527,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rcsThrust: 145
-  mainThrust: 33
+  mainThrust: 20
+  engineThrustSFX: {fileID: 8300000, guid: f7025820277fc43158cfa833679e4591, type: 3}
+  deathSFX: {fileID: 8300000, guid: 3a2e40c8447b84bb499a27f490e591e9, type: 3}
+  successSFX: {fileID: 8300000, guid: d83eed48a1f544428ae1544f4481fd44, type: 3}
 --- !u!54 &647452268
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -557,4 +560,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rcsThrust: 145
-  mainThrust: 15
+  mainThrust: 20
+  engineThrustSFX: {fileID: 0}
+  deathSFX: {fileID: 0}
+  successSFX: {fileID: 0}
