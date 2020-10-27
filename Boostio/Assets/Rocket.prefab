@@ -60,7 +60,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: f974845e17e134618a6bdae26cb94ee3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -155,7 +155,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: f974845e17e134618a6bdae26cb94ee3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -390,8 +390,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6040532155927347825}
   - component: {fileID: 392004422004115245}
-  - component: {fileID: 4674445466936935778}
-  - component: {fileID: 8583119607177112512}
+  - component: {fileID: 647452270}
+  - component: {fileID: 647452268}
+  - component: {fileID: 7640347990733892608}
   m_Layer: 0
   m_Name: Rocket
   m_TagString: Untagged
@@ -513,7 +514,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &4674445466936935778
+--- !u!114 &647452270
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -525,9 +526,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a0a4f30a604345988fe8241f308b251, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rcsThrust: 33
-  mainThrust: 145
---- !u!54 &8583119607177112512
+  rcsThrust: 145
+  mainThrust: 33
+--- !u!54 &647452268
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -543,3 +544,17 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 56
   m_CollisionDetection: 0
+--- !u!114 &7640347990733892608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6040532155927347822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a0a4f30a604345988fe8241f308b251, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rcsThrust: 145
+  mainThrust: 15
