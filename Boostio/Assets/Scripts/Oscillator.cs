@@ -16,6 +16,7 @@ public class Oscillator : MonoBehaviour
 
     void Update()
     {
+        if (period <= Mathf.Epsilon) { return; }
         float cycles = Time.time / period;
         float rawSinWave = Mathf.Sin(cycles * tau);
         float movementFactor = rawSinWave / 2f + 0.5f;
