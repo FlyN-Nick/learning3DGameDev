@@ -18,17 +18,15 @@ public class Rocket : MonoBehaviour
     [SerializeField] private ParticleSystem deathVFX;
     [SerializeField] private ParticleSystem successVFX;
 
+    [SerializeField] private AudioSource engineAudioSource;
+    [SerializeField] private AudioSource completionAudioSource;
+
     private Rigidbody rigidBody;
-    private AudioSource audioSource;
 
     private enum State { alive, dead, transcending }
     State state = State.alive;
 
-    private void Start()
-    {
-        rigidBody = GetComponent<Rigidbody>();
-        audioSource = GetComponent<AudioSource>();
-    }
+    private void Start() { rigidBody = GetComponent<Rigidbody>(); }
 
     private void Update()
     {
@@ -46,11 +44,11 @@ public class Rocket : MonoBehaviour
             // thrust rocket 
             rigidBody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
             // play thrust sfx
-            if (!audioSource.isPlaying) { audioSource.PlayOneShot(engineThrustSFX); }
+            if (!engineAudioSource.isPlaying) { engineAudioSource.PlayOneShot(engineThrustSFX); }
             // play thrust vfx
             if (!engineVFX.isPlaying) { engineVFX.Play(); }
         }
-        else if (audioSource.isPlaying) { audioSource.Stop(); engineVFX.Stop(); }
+        else if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); engineVFX.Stop(); }
     }
 
     private void Rotate()
@@ -88,18 +86,18 @@ public class Rocket : MonoBehaviour
             case "Finish":
                 // TODO: next level or level screen?
                 state = State.transcending;
-                //if (audioSource.isPlaying) { audioSource.Stop(); }
+                if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
                 if (engineVFX.isPlaying) { engineVFX.Stop(); }
-                audioSource.PlayOneShot(successSFX);
+                completionAudioSource.PlayOneShot(successSFX);
                 successVFX.Play();
                 Invoke("LoadNextLevel", levelLoadDelay);
                 break;
             default:
                 // TODO: first level or level screen?
                 state = State.dead;
-                //if (audioSource.isPlaying) { audioSource.Stop(); }
+                if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
                 if (engineVFX.isPlaying) { engineVFX.Stop(); }
-                audioSource.PlayOneShot(deathSFX);
+                completionAudioSource.PlayOneShot(deathSFX);
                 deathVFX.Play();
                 Invoke("LoadFirstLevel", levelLoadDelay);
                 break;
