@@ -529,7 +529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rcsThrust: 145
-  mainThrust: 20
+  mainThrust: 1750
   engineThrustSFX: {fileID: 8300000, guid: f7025820277fc43158cfa833679e4591, type: 3}
   deathSFX: {fileID: 8300000, guid: 3a2e40c8447b84bb499a27f490e591e9, type: 3}
   successSFX: {fileID: 8300000, guid: d83eed48a1f544428ae1544f4481fd44, type: 3}

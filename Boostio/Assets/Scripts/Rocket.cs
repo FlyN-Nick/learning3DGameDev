@@ -37,6 +37,39 @@ public class Rocket : MonoBehaviour
             Rotate();
         }
     }
+    
+    private void Thrust()
+    {
+        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow))
+        {
+            // thrust rocket 
+            rigidBody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
+            // play thrust sfx
+            if (!audioSource.isPlaying) { audioSource.PlayOneShot(engineThrustSFX); }
+            // play thrust vfx
+            if (!engineVFX.isPlaying) { engineVFX.Play(); }
+        }
+        else if (audioSource.isPlaying) { audioSource.Stop(); engineVFX.Stop(); }
+    }
+
+    private void Rotate()
+    {
+        rigidBody.freezeRotation = true; // take manual control of rotation
+
+        float rotSpeed = rcsThrust * Time.deltaTime;
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            // rotate left
+            transform.Rotate(Vector3.forward*rotSpeed);
+        }
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            // rotate right 
+            transform.Rotate(Vector3.back*rotSpeed);
+        }
+
+        rigidBody.freezeRotation = false; // resume physics control of rotation 
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -75,38 +108,5 @@ public class Rocket : MonoBehaviour
         SceneManager.LoadScene(1); // TODO: make this work for more than 2 levels
     }
 
-    void LoadFirstLevel() { SceneManager.LoadScene(0);  }
-    
-    private void Thrust()
-    {
-        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow))
-        {
-            // thrust rocket 
-            rigidBody.AddRelativeForce(Vector3.up * mainThrust);
-            // play thrust sfx
-            if (!audioSource.isPlaying) { audioSource.PlayOneShot(engineThrustSFX); }
-            // play thrust vfx
-            if (!engineVFX.isPlaying) { engineVFX.Play(); }
-        }
-        else if (audioSource.isPlaying) { audioSource.Stop(); engineVFX.Stop(); }
-    }
-
-    private void Rotate()
-    {
-        rigidBody.freezeRotation = true; // take manual control of rotation
-
-        float rotSpeed = rcsThrust * Time.deltaTime;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            // rotate left
-            transform.Rotate(Vector3.forward*rotSpeed);
-        }
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            // rotate right 
-            transform.Rotate(Vector3.back*rotSpeed);
-        }
-
-        rigidBody.freezeRotation = false; // resume physics control of rotation 
-    }
+    void LoadFirstLevel() { SceneManager.LoadScene(0); }
 }
