@@ -58,3 +58,10 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# For Firebase
+Boostio/Assets/GoogleService-Info.plist
+Boostio/Assets/GoogleService-Info.plist.meta
+Boostio/Assets/StreamingAssets/
+
+# To be less annoying
+.DS_Store
