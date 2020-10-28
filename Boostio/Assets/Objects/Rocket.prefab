@@ -720,12 +720,14 @@ MonoBehaviour:
   levelLoadDelay: 1
   engineThrustSFX: {fileID: 8300000, guid: f7025820277fc43158cfa833679e4591, type: 3}
   deathSFX: {fileID: 8300000, guid: 3a2e40c8447b84bb499a27f490e591e9, type: 3}
-  successSFX: {fileID: 8300000, guid: d83eed48a1f544428ae1544f4481fd44, type: 3}
+  successOneSFX: {fileID: 8300000, guid: d80c9c8ca4719456d8c47d8fe70c3b83, type: 3}
+  successTwoSFX: {fileID: 8300000, guid: d83eed48a1f544428ae1544f4481fd44, type: 3}
   engineVFX: {fileID: 198100718609882145}
   deathVFX: {fileID: 198204747295934488}
   successVFX: {fileID: 198631064260446452}
   engineAudioSource: {fileID: 392004422004115245}
   completionAudioSource: {fileID: 1026031958}
+  UILevel: 0
 --- !u!54 &647452268
 Rigidbody:
   m_ObjectHideFlags: 0

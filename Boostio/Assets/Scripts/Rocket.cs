@@ -12,7 +12,8 @@ public class Rocket : MonoBehaviour
 
     [SerializeField] private AudioClip engineThrustSFX;
     [SerializeField] private AudioClip deathSFX;
-    [SerializeField] private AudioClip successSFX;
+    [SerializeField] private AudioClip successOneSFX;
+    [SerializeField] private AudioClip successTwoSFX;
 
     [SerializeField] private ParticleSystem engineVFX;
     [SerializeField] private ParticleSystem deathVFX;
@@ -26,7 +27,7 @@ public class Rocket : MonoBehaviour
     private Rigidbody rigidBody;
     private bool isCollisionsEnabled = true;
 
-    private enum State { alive, dead, transcending }
+    private enum State { alive, dead, transcending, transcended }
     State state = State.alive;
 
     private void Start() { rigidBody = GetComponent<Rigidbody>(); }
@@ -40,7 +41,7 @@ public class Rocket : MonoBehaviour
         }
         DebugKeys();
     }
-    
+
     private void Thrust()
     {
         if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow))
@@ -63,12 +64,12 @@ public class Rocket : MonoBehaviour
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
             // rotate left
-            transform.Rotate(Vector3.forward*rotSpeed);
+            transform.Rotate(Vector3.forward * rotSpeed);
         }
         else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             // rotate right 
-            transform.Rotate(Vector3.back*rotSpeed);
+            transform.Rotate(Vector3.back * rotSpeed);
         }
 
         rigidBody.freezeRotation = false; // resume physics control of rotation 
@@ -91,36 +92,36 @@ public class Rocket : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (state != State.alive || !isCollisionsEnabled) { return; }
+        if (state == State.dead || state == State.transcended || !isCollisionsEnabled) { return; }
 
-        switch (collision.gameObject.tag)
+        if (collision.gameObject.CompareTag("Finish") && state != State.transcending)
         {
-            case "Friendly":
-                // do nothing
-                // TODO: switch to if else?
-                break;
-            case "Fuel":
-                // TODO: refuel
-                break;
-            case "Finish":
-                // TODO: next level or level screen?
-                state = State.transcending;
-                if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
-                if (engineVFX.isPlaying) { engineVFX.Stop(); }
-                completionAudioSource.PlayOneShot(successSFX);
-                successVFX.Play();
-                if (!UILevel) { Invoke("LoadNextLevel", levelLoadDelay); }
-                else { Invoke("ReloadLevel", levelLoadDelay); }
-                break;
-            default:
-                // TODO: first level or level screen?
-                state = State.dead;
-                if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
-                if (engineVFX.isPlaying) { engineVFX.Stop(); }
-                completionAudioSource.PlayOneShot(deathSFX);
-                deathVFX.Play();
-                Invoke("ReloadLevel", levelLoadDelay);
-                break;
+            state = State.transcending;
+            if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
+            if (engineVFX.isPlaying) { engineVFX.Stop(); }
+            completionAudioSource.PlayOneShot(successOneSFX);
+            Invoke(nameof(SuccessfullyLand), 1f);
+        }
+        else if (!collision.gameObject.CompareTag("Friendly") && !collision.gameObject.CompareTag("Fuel") && !collision.gameObject.CompareTag("Finish"))
+        {
+            state = State.dead;
+            if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
+            if (engineVFX.isPlaying) { engineVFX.Stop(); }
+            completionAudioSource.PlayOneShot(deathSFX);
+            deathVFX.Play();
+            Invoke(nameof(ReloadLevel), levelLoadDelay);
+        }
+    }
+
+    public void SuccessfullyLand()
+    {
+        if (state != State.dead && state != State.transcended)
+        {
+            state = State.transcended;
+            completionAudioSource.PlayOneShot(successTwoSFX);
+            successVFX.Play();
+            if (!UILevel) { Invoke(nameof(LoadNextLevel), levelLoadDelay); }
+            else { Invoke(nameof(ReloadLevel), levelLoadDelay); }
         }
     }
 
@@ -129,7 +130,7 @@ public class Rocket : MonoBehaviour
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
         int numberOfLevels = SceneManager.sceneCountInBuildSettings;
         int newIndex;
-        if (currentIndex == numberOfLevels-1) { newIndex = 0; }
+        if (currentIndex == numberOfLevels - 1) { newIndex = 0; }
         else { newIndex = currentIndex + 1; }
         SceneManager.LoadScene(newIndex);
     }
