@@ -58,7 +58,7 @@ public class Rocket : MonoBehaviour
 
     private void Rotate()
     {
-        rigidBody.freezeRotation = true; // take manual control of rotation
+        rigidBody.angularVelocity = Vector3.zero; // remove any unwanted rotation
 
         float rotSpeed = rcsThrust * Time.deltaTime;
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
@@ -71,8 +71,6 @@ public class Rocket : MonoBehaviour
             // rotate right 
             transform.Rotate(Vector3.back * rotSpeed);
         }
-
-        rigidBody.freezeRotation = false; // resume physics control of rotation 
     }
 
     private void DebugKeys()
@@ -102,7 +100,7 @@ public class Rocket : MonoBehaviour
             completionAudioSource.PlayOneShot(successOneSFX);
             Invoke(nameof(SuccessfullyLand), 1f);
         }
-        else if (!collision.gameObject.CompareTag("Friendly") && !collision.gameObject.CompareTag("Fuel") && !collision.gameObject.CompareTag("Finish"))
+        else if (!collision.gameObject.CompareTag("Friendly") && !collision.gameObject.CompareTag("Finish"))
         {
             state = State.dead;
             if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
