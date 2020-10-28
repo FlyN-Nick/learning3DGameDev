@@ -21,7 +21,10 @@ public class Rocket : MonoBehaviour
     [SerializeField] private AudioSource engineAudioSource;
     [SerializeField] private AudioSource completionAudioSource;
 
+    [SerializeField] private bool UILevel = false; // menu screen or game over
+
     private Rigidbody rigidBody;
+    private bool isCollisionsEnabled = true;
 
     private enum State { alive, dead, transcending }
     State state = State.alive;
@@ -35,6 +38,7 @@ public class Rocket : MonoBehaviour
             Thrust();
             Rotate();
         }
+        DebugKeys();
     }
     
     private void Thrust()
@@ -70,9 +74,24 @@ public class Rocket : MonoBehaviour
         rigidBody.freezeRotation = false; // resume physics control of rotation 
     }
 
+    private void DebugKeys()
+    {
+        if (Debug.isDebugBuild)
+        {
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                LoadNextLevel();
+            }
+            else if (Input.GetKeyDown(KeyCode.C))
+            {
+                isCollisionsEnabled = !isCollisionsEnabled;
+            }
+        }
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
-        if (state != State.alive) { return; }
+        if (state != State.alive || !isCollisionsEnabled) { return; }
 
         switch (collision.gameObject.tag)
         {
@@ -90,7 +109,8 @@ public class Rocket : MonoBehaviour
                 if (engineVFX.isPlaying) { engineVFX.Stop(); }
                 completionAudioSource.PlayOneShot(successSFX);
                 successVFX.Play();
-                Invoke("LoadNextLevel", levelLoadDelay);
+                if (!UILevel) { Invoke("LoadNextLevel", levelLoadDelay); }
+                else { Invoke("ReloadLevel", levelLoadDelay); }
                 break;
             default:
                 // TODO: first level or level screen?
@@ -99,15 +119,22 @@ public class Rocket : MonoBehaviour
                 if (engineVFX.isPlaying) { engineVFX.Stop(); }
                 completionAudioSource.PlayOneShot(deathSFX);
                 deathVFX.Play();
-                Invoke("LoadFirstLevel", levelLoadDelay);
+                Invoke("ReloadLevel", levelLoadDelay);
                 break;
         }
     }
 
-    void LoadNextLevel()
+    public void LoadNextLevel()
     {
-        SceneManager.LoadScene(1); // TODO: make this work for more than 2 levels
+        int currentIndex = SceneManager.GetActiveScene().buildIndex;
+        int numberOfLevels = SceneManager.sceneCountInBuildSettings;
+        int newIndex;
+        if (currentIndex == numberOfLevels-1) { newIndex = 0; }
+        else { newIndex = currentIndex + 1; }
+        SceneManager.LoadScene(newIndex);
     }
 
-    void LoadFirstLevel() { SceneManager.LoadScene(0); }
+    void ReloadLevel() { SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); }
+
+    void Restart() { SceneManager.LoadScene(0); }
 }
