@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -42,14 +43,12 @@ public class TimeTracker : MonoBehaviour
         {
             if (currentIndex == totalNumLevels - 1)
             {
-                //print("TIME TRACKING STOPPING.");
                 isTrackingTime = false;
                 canvas.SetActive(true);
                 GetLeaderboard();
             }
             else if (currentIndex == 1)
             {
-                //print("TIME TRACKING STARTING.");
                 canvas.SetActive(false);
                 time = 0;
                 isTrackingTime = true;
@@ -67,19 +66,21 @@ public class TimeTracker : MonoBehaviour
     {
         db = FirebaseFirestore.DefaultInstance;
         DocumentReference docRef = db.Collection("data").Document("record");
-        //print("Fetching...");
         Dictionary<string, object> recordData = (await docRef.GetSnapshotAsync()).ToDictionary();
-        //print($"Fetched.\nrecordData: {recordData}");
         long timeRecord = (long) recordData["time"];
-        //print($"timeRecord: {timeRecord}");
         int flooredTime = (int) Math.Floor(time);
-        string message = $"Time to completion: {flooredTime} seconds.";
-        if (flooredTime < timeRecord)
+        CreateMessage(flooredTime, timeRecord);
+    }
+
+    async void CreateMessage(int userTime, long timeRecord)
+    {
+        string message = $"Time to completion: {userTime} seconds.";
+        if (userTime < timeRecord)
         {
             message += $"\nThat's the fastest playthrough EVER.\nThe old record was {timeRecord} seconds.";
-            NewRecord(flooredTime);
+            await NewRecord(userTime);
         }
-        else if (flooredTime == timeRecord)
+        else if (userTime == timeRecord)
         {
             message += $"\nThat's the same time as the record!";
         }
@@ -88,15 +89,13 @@ public class TimeTracker : MonoBehaviour
             message += $"\nThe current playthrough time record is {timeRecord} seconds.";
         }
         messageUGUI.text = message;
-        //print($"message: {message}");
     }
 
-    async void NewRecord(int time)
+    private Task NewRecord(int time)
     {
         DocumentReference docRef = db.Collection("data").Document("record");
         Dictionary<string, object> data = new Dictionary<string, object> { { "time", time } };
-        await docRef.SetAsync(data);
-        //print($"Updated record to: {time} seconds.");
+        return docRef.SetAsync(data);
     }
 
     public void Restart() { SceneManager.LoadScene(0); }
