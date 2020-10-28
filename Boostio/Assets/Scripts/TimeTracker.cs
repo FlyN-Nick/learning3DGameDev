@@ -3,11 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 using Firebase.Firestore;
 using Firebase.Extensions;
 
 public class TimeTracker : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI messageUGUI;
+    [SerializeField] private GameObject canvas;
+
     private int rememberedSceneIndex = 0;
     private int totalNumLevels;
     private bool isTrackingTime = true;
@@ -27,6 +31,7 @@ public class TimeTracker : MonoBehaviour
         {
             DontDestroyOnLoad(gameObject);
             totalNumLevels = SceneManager.sceneCountInBuildSettings;
+            canvas.SetActive(false);
         }
     }
 
@@ -39,13 +44,19 @@ public class TimeTracker : MonoBehaviour
             {
                 //print("TIME TRACKING STOPPING.");
                 isTrackingTime = false;
+                canvas.SetActive(true);
                 GetLeaderboard();
             }
             else if (currentIndex == 1)
             {
                 //print("TIME TRACKING STARTING.");
+                canvas.SetActive(false);
                 time = 0;
                 isTrackingTime = true;
+            }
+            else if (currentIndex == 0)
+            {
+                canvas.SetActive(false);
             }
             rememberedSceneIndex = currentIndex;
         }
@@ -76,7 +87,7 @@ public class TimeTracker : MonoBehaviour
         {
             message += $"\nThe current playthrough time record is {timeRecord} seconds.";
         }
-        // TODO: update text UI with message
+        messageUGUI.text = message;
         //print($"message: {message}");
     }
 
@@ -87,4 +98,6 @@ public class TimeTracker : MonoBehaviour
         await docRef.SetAsync(data);
         //print($"Updated record to: {time} seconds.");
     }
+
+    public void Restart() { SceneManager.LoadScene(0); }
 }
