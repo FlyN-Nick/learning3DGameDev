@@ -17,6 +17,7 @@ public class TimeTracker : MonoBehaviour
     private int totalNumLevels;
     private bool isTrackingTime = true;
     private float time = 0f;
+    private float[] levelTimes;
 
     private FirebaseFirestore db;
 
@@ -31,12 +32,15 @@ public class TimeTracker : MonoBehaviour
         else
         {
             DontDestroyOnLoad(gameObject);
-            totalNumLevels = SceneManager.sceneCountInBuildSettings;
             canvas.SetActive(false);
+            totalNumLevels = SceneManager.sceneCountInBuildSettings;
+            levelTimes = new float[totalNumLevels];
         }
     }
 
-    private void Update()
+    private void Start() { db = FirebaseFirestore.DefaultInstance; }
+
+    private async void Update()
     {
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
         if (rememberedSceneIndex != currentIndex)
@@ -56,6 +60,21 @@ public class TimeTracker : MonoBehaviour
             else if (currentIndex == 1) { isTrackingTime = true; }
             
             rememberedSceneIndex = currentIndex;
+            if (currentIndex > 1)
+            {
+                int adjustedIndex = currentIndex - 2;
+                float levelTime;
+                if (adjustedIndex == 0)
+                {
+                    levelTime = time;
+                }
+                else
+                {
+                    levelTime = time - levelTimes[adjustedIndex-1];
+                }
+                levelTimes[adjustedIndex] = levelTime;
+                if (InternetAvailable()) { await UploadLevelData(levelTime, adjustedIndex + 1); }
+            }
         }
         else if (isTrackingTime) { time += Time.deltaTime; }   
     }
@@ -71,14 +90,15 @@ public class TimeTracker : MonoBehaviour
 
     private async void GetLeaderboard()
     {
-        int flooredTime = (int)Math.Floor(time);
+        int flooredTime = (int) Math.Floor(time);
         long timeRecord = -1;
         if (InternetAvailable())
         {
-            db = FirebaseFirestore.DefaultInstance;
-            DocumentReference docRef = db.Collection("data").Document("record");
-            Dictionary<string, object> recordData = (await docRef.GetSnapshotAsync()).ToDictionary();
-            timeRecord = (long)recordData["time"];
+            DocumentReference docRef = db.Collection("recordData").Document("record");
+            Task<DocumentSnapshot> fetchRecordTask = docRef.GetSnapshotAsync();
+            await Task.WhenAll(UploadTotalData(flooredTime), fetchRecordTask);
+            Dictionary<string, object> recordData = (await fetchRecordTask).ToDictionary();
+            timeRecord = (long) recordData["time"];
         }
         CreateMessage(flooredTime, timeRecord);
     }
@@ -109,9 +129,23 @@ public class TimeTracker : MonoBehaviour
         messageUGUI.text = message;
     }
 
+    private Task UploadLevelData(float time, int levelNum)
+    {
+        DocumentReference docRef = db.Collection($"levelData/eachLevel/{levelNum}").Document();
+        Dictionary<string, object> data = new Dictionary<string, object> { { "time", time } };
+        return docRef.SetAsync(data);
+    }
+
+    private Task UploadTotalData(float time)
+    {
+        DocumentReference docRef = db.Collection("levelData/eachLevel/total").Document();
+        Dictionary<string, object> data = new Dictionary<string, object> { { "time", time } };
+        return docRef.SetAsync(data);
+    }
+
     private Task NewRecord(int time)
     {
-        DocumentReference docRef = db.Collection("data").Document("record");
+        DocumentReference docRef = db.Collection("recordData").Document("record");
         Dictionary<string, object> data = new Dictionary<string, object> { { "time", time } };
         return docRef.SetAsync(data);
     }
