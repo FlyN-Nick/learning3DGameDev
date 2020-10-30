@@ -10,21 +10,21 @@ public class Rocket : MonoBehaviour
     [SerializeField] private float mainThrust = 100f;
     [SerializeField] private float levelLoadDelay = 1f;
 
-    [SerializeField] private AudioClip engineThrustSFX;
-    [SerializeField] private AudioClip deathSFX;
-    [SerializeField] private AudioClip successOneSFX;
-    [SerializeField] private AudioClip successTwoSFX;
+    [SerializeField] private AudioClip engineThrustSFX = null;
+    [SerializeField] private AudioClip deathSFX = null;
+    [SerializeField] private AudioClip successOneSFX = null;
+    [SerializeField] private AudioClip successTwoSFX = null;
 
-    [SerializeField] private ParticleSystem engineVFX;
-    [SerializeField] private ParticleSystem deathVFX;
-    [SerializeField] private ParticleSystem successVFX;
+    [SerializeField] private ParticleSystem engineVFX = null;
+    [SerializeField] private ParticleSystem deathVFX = null;
+    [SerializeField] private ParticleSystem successVFX = null;
 
-    [SerializeField] private AudioSource engineAudioSource;
-    [SerializeField] private AudioSource completionAudioSource;
+    [SerializeField] private AudioSource engineAudioSource = null;
+    [SerializeField] private AudioSource completionAudioSource = null;
 
     [SerializeField] private bool UILevel = false; // menu screen or game over
 
-    private Rigidbody rigidBody;
+    private Rigidbody rigidBody = null;
     private bool isCollisionsEnabled = true;
 
     private enum State { alive, dead, transcending, transcended }

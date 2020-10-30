@@ -10,8 +10,8 @@ using Firebase.Extensions;
 
 public class TimeTracker : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI messageUGUI;
-    [SerializeField] private GameObject canvas;
+    [SerializeField] private TextMeshProUGUI messageUGUI = null;
+    [SerializeField] private GameObject canvas = null;
 
     private int rememberedSceneIndex = 0;
     private int totalNumLevels;
@@ -20,7 +20,7 @@ public class TimeTracker : MonoBehaviour
 
     private FirebaseFirestore db;
 
-    void Awake()
+    private void Awake()
     {
         int amount = FindObjectsOfType<TimeTracker>().Length;
         if (amount > 1)
@@ -36,7 +36,7 @@ public class TimeTracker : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
         if (rememberedSceneIndex != currentIndex)
@@ -47,46 +47,64 @@ public class TimeTracker : MonoBehaviour
                 canvas.SetActive(true);
                 GetLeaderboard();
             }
-            else if (currentIndex == 1)
-            {
-                canvas.SetActive(false);
-                time = 0;
-                isTrackingTime = true;
-            }
             else if (currentIndex == 0)
             {
+                messageUGUI.text = "";
                 canvas.SetActive(false);
+                time = 0;
             }
+            else if (currentIndex == 1) { isTrackingTime = true; }
+            
             rememberedSceneIndex = currentIndex;
         }
         else if (isTrackingTime) { time += Time.deltaTime; }   
     }
 
-    async void GetLeaderboard()
+    private bool InternetAvailable()
     {
-        db = FirebaseFirestore.DefaultInstance;
-        DocumentReference docRef = db.Collection("data").Document("record");
-        Dictionary<string, object> recordData = (await docRef.GetSnapshotAsync()).ToDictionary();
-        long timeRecord = (long) recordData["time"];
-        int flooredTime = (int) Math.Floor(time);
+        if (Application.internetReachability == NetworkReachability.NotReachable)
+        {
+            return false;
+        }
+        else { return true; }
+    }
+
+    private async void GetLeaderboard()
+    {
+        int flooredTime = (int)Math.Floor(time);
+        long timeRecord = -1;
+        if (InternetAvailable())
+        {
+            db = FirebaseFirestore.DefaultInstance;
+            DocumentReference docRef = db.Collection("data").Document("record");
+            Dictionary<string, object> recordData = (await docRef.GetSnapshotAsync()).ToDictionary();
+            timeRecord = (long)recordData["time"];
+        }
         CreateMessage(flooredTime, timeRecord);
     }
 
-    async void CreateMessage(int userTime, long timeRecord)
+    private async void CreateMessage(int userTime, long timeRecord = -1)
     {
         string message = $"Time to completion: {userTime} seconds.";
-        if (userTime < timeRecord)
+        if (timeRecord == -1)
         {
-            message += $"\nThat's the fastest playthrough EVER.\nThe old record was {timeRecord} seconds.";
-            await NewRecord(userTime);
-        }
-        else if (userTime == timeRecord)
-        {
-            message += $"\nThat's the same time as the record!";
+            message += "\nGG WP :D";
         }
         else
         {
-            message += $"\nThe current playthrough time record is {timeRecord} seconds.";
+            if (userTime < timeRecord)
+            {
+                message += $"\nThat's the fastest playthrough EVER.\nThe old record was {timeRecord} seconds.";
+                if (InternetAvailable()) { await NewRecord(userTime); }
+            }
+            else if (userTime == timeRecord)
+            {
+                message += $"\nThat's the same time as the record!";
+            }
+            else
+            {
+                message += $"\nThe current playthrough time record is {timeRecord} seconds.";
+            }
         }
         messageUGUI.text = message;
     }
