@@ -90,20 +90,32 @@ public class TimeTracker : MonoBehaviour
 
     private async void GetLeaderboard()
     {
-        int flooredTime = (int) Math.Floor(time);
-        long timeRecord = -1;
+        double timeRecord = -1d;
         if (InternetAvailable())
         {
-            DocumentReference docRef = db.Collection("recordData").Document("record");
-            Task<DocumentSnapshot> fetchRecordTask = docRef.GetSnapshotAsync();
-            await Task.WhenAll(UploadTotalData(flooredTime), fetchRecordTask);
+            DocumentReference recordDocRef = db.Collection("recordStats").Document("total");
+            /*
+            Task<DocumentSnapshot> fetchRecordTask = recordDocRef.GetSnapshotAsync();
+            await Task.WhenAll(fetchRecordTask, UploadTotalData(flooredTime));
             Dictionary<string, object> recordData = (await fetchRecordTask).ToDictionary();
             timeRecord = (long) recordData["time"];
+            */
+            /*
+             * The above code is commented out 
+             * because I am using firebase cloud functions 
+             * to check when a new playthrough time is added and update the record if it's faster.
+             * This is problematic because when fetching for the record,
+             * I want the old record if the user just set a new record,
+             * and therefore I want to first fetch the record, 
+             * then push to the database the user's playthrough time.
+             */
+            timeRecord = (double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"];
+            _ = UploadTotalData(time);
         }
-        CreateMessage(flooredTime, timeRecord);
+        CreateMessage(time, timeRecord);
     }
 
-    private async void CreateMessage(int userTime, long timeRecord = -1)
+    private void CreateMessage(double userTime, double timeRecord = -1)
     {
         string message = $"Time to completion: {userTime} seconds.";
         if (timeRecord == -1)
@@ -115,7 +127,6 @@ public class TimeTracker : MonoBehaviour
             if (userTime < timeRecord)
             {
                 message += $"\nThat's the fastest playthrough EVER.\nThe old record was {timeRecord} seconds.";
-                if (InternetAvailable()) { await NewRecord(userTime); }
             }
             else if (userTime == timeRecord)
             {
@@ -139,13 +150,6 @@ public class TimeTracker : MonoBehaviour
     private Task UploadTotalData(float time)
     {
         DocumentReference docRef = db.Collection("levelData/eachLevel/total").Document();
-        Dictionary<string, object> data = new Dictionary<string, object> { { "time", time } };
-        return docRef.SetAsync(data);
-    }
-
-    private Task NewRecord(int time)
-    {
-        DocumentReference docRef = db.Collection("recordData").Document("record");
         Dictionary<string, object> data = new Dictionary<string, object> { { "time", time } };
         return docRef.SetAsync(data);
     }
