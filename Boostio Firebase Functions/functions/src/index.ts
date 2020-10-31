@@ -36,15 +36,15 @@ export const levelDataCreated = functions.firestore
  * All this does is log to the console.
  * For testing/debugging purposes.
  */
-export const recordUpdated = functions.firestore
-    .document('recordStats/{levelNum}')
-    .onUpdate((change, context) => 
-    {
-        const newRecord = change.after.data();
-        const oldRecord = change.before.data();
-        const levelNum = context.params.levelNum;
-        functions.logger.log(`Updated record for level #${levelNum} is ${newRecord}s. Previously was ${oldRecord}s.`);
-    });
+// export const recordUpdated = functions.firestore
+//     .document('recordStats/{levelNum}')
+//     .onUpdate((change, context) => 
+//     {
+//         const newRecord = change.after.data();
+//         const oldRecord = change.before.data();
+//         const levelNum = context.params.levelNum;
+//         functions.logger.log(`Updated record for level #${levelNum} is ${newRecord}s. Previously was ${oldRecord}s.`);
+//     });
 
 /**
  * HTTPS request for a user's percentile for any playthrough time.
@@ -97,7 +97,7 @@ function average(arr: number[])
 function updateLevelRecord(level: string, time: timeObj)
 {
     db.doc(`recordStats/${level}`).set(time)
-        .then( (data) => { functions.logger.log(`New record ${time.time}s for level #${level}`); } )
+        .then( (data) => { functions.logger.log(`New record ${time.time.toFixed(3)}s for level #${level}.`); } )
         .catch( (err) => { functions.logger.error(err); } );
 }
 
@@ -119,7 +119,7 @@ function updateLevelAverage(level: string)
             const avg = average(levelTimes);
             const avgObj: timeObj = { time: avg };
             db.doc(`levelAverages/${level}`).set(avgObj)
-                .then( (_) => { functions.logger.log(`New average ${avg}s for level #${level}`); } )
+                .then( (_) => { functions.logger.log(`New average ${avg.toFixed(3)}s for level #${level}.`); } )
                 .catch( (err) => { functions.logger.error(err); } );
         })
         .catch( (err) => { functions.logger.error(err); } );

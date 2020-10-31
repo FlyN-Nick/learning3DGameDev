@@ -109,10 +109,10 @@ public class TimeTracker : MonoBehaviour
              * and therefore I want to first fetch the record, 
              * then push to the database the user's playthrough time.
              */
-            timeRecord = (double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"];
+            timeRecord = Math.Round((double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"], 2);
             _ = UploadTotalData(time);
         }
-        CreateMessage(time, timeRecord);
+        CreateMessage(Math.Round(time, 2), timeRecord);
     }
 
     private void CreateMessage(double userTime, double timeRecord = -1)
