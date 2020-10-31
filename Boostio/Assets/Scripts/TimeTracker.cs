@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using Firebase.Firestore;
+using Firebase.Functions;
 using Firebase.Extensions;
 
 public class TimeTracker : MonoBehaviour
@@ -20,6 +21,7 @@ public class TimeTracker : MonoBehaviour
     private float[] levelTimes;
 
     private FirebaseFirestore db;
+    private FirebaseFunctions func;
 
     private void Awake()
     {
@@ -38,7 +40,11 @@ public class TimeTracker : MonoBehaviour
         }
     }
 
-    private void Start() { db = FirebaseFirestore.DefaultInstance; }
+    private void Start()
+    {
+        db = FirebaseFirestore.DefaultInstance;
+        func = FirebaseFunctions.DefaultInstance;
+    }
 
     private async void Update()
     {
@@ -111,6 +117,16 @@ public class TimeTracker : MonoBehaviour
              */
             timeRecord = Math.Round((double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"], 2);
             _ = UploadTotalData(time);
+            int index = 1;
+            List<Task<string>> tasks = new List<Task<string>>();
+            foreach (float levelTime in levelTimes)
+            {
+                tasks.Add(FetchPercentile(levelTime, index.ToString()));
+                index++;
+            }
+            tasks.Add(FetchPercentile(time, "total"));
+            string[] percentiles = await Task.WhenAll(tasks);
+            foreach (string percentile in percentiles) { print(percentile); }
         }
         CreateMessage(Math.Round(time, 2), timeRecord);
     }
@@ -155,4 +171,14 @@ public class TimeTracker : MonoBehaviour
     }
 
     public void Restart() { SceneManager.LoadScene(0); }
+
+    private Task<string> FetchPercentile(float time, string levelNum)
+    {
+        var data = new Dictionary<string, object>();
+        data["level"] = levelNum;
+        data["time"] = time;
+
+        var function = func.GetHttpsCallable("getPercentile");
+        return function.CallAsync(data).ContinueWith( (task) => { return task.Result.ToString(); } );
+    }
 }

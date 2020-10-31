@@ -61,7 +61,11 @@ export const getPercentile = functions.https.onRequest((req, res) =>
                 const time = doc.data() as timeObj;
                 levelTimes.push(time.time);
             });
-            res.send({ percentile: percentile(levelTimes, percentileReqData.time) });
+            res.status(200).send({ 
+                data: {
+                    percentile: percentile(levelTimes, percentileReqData.time) 
+                }
+            });
         })
         .catch((err) => 
         { 
