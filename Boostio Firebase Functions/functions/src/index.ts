@@ -61,7 +61,7 @@ export const getPercentile = functions.https.onRequest((req, res) =>
                 const time = doc.data() as timeObj;
                 levelTimes.push(time.time);
             });
-            const calculatedPercentile = percentile(levelTimes, percentileReqData.time);
+            const calculatedPercentile = 100-percentile(levelTimes, percentileReqData.time);
             if (percentileReqData.level === "total")
             {
                 functions.logger.log(`Percentile ${calculatedPercentile.toFixed(3)} calculated for overall playthrough time ${percentileReqData.time}s.`);
