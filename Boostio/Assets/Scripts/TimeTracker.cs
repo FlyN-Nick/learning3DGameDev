@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using Firebase.Firestore;
 using Firebase.Functions;
-using Firebase.Extensions;
+using Newtonsoft.Json;
 
 public class TimeTracker : MonoBehaviour
 {
@@ -22,6 +22,8 @@ public class TimeTracker : MonoBehaviour
 
     private FirebaseFirestore db;
     private FirebaseFunctions func;
+
+    private List<Task<object>> tasks = new List<Task<object>>();
 
     private void Awake()
     {
@@ -51,10 +53,12 @@ public class TimeTracker : MonoBehaviour
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
         if (rememberedSceneIndex != currentIndex)
         {
+            rememberedSceneIndex = currentIndex;
             if (currentIndex == totalNumLevels - 1)
             {
                 isTrackingTime = false;
                 canvas.SetActive(true);
+                tasks.Add(FetchPercentile(time, "total"));
                 GetLeaderboard();
             }
             else if (currentIndex == 0)
@@ -65,7 +69,6 @@ public class TimeTracker : MonoBehaviour
             }
             else if (currentIndex == 1) { isTrackingTime = true; }
             
-            rememberedSceneIndex = currentIndex;
             if (currentIndex > 1)
             {
                 int adjustedIndex = currentIndex - 2;
@@ -79,7 +82,12 @@ public class TimeTracker : MonoBehaviour
                     levelTime = time - levelTimes[adjustedIndex-1];
                 }
                 levelTimes[adjustedIndex] = levelTime;
-                if (InternetAvailable()) { await UploadLevelData(levelTime, adjustedIndex + 1); }
+                if (InternetAvailable())
+                {
+                    int levelNum = adjustedIndex + 1;
+                    await UploadLevelData(levelTime, levelNum);
+                    tasks.Add(FetchPercentile(levelTime, levelNum.ToString()));
+                }
             }
         }
         else if (isTrackingTime) { time += Time.deltaTime; }   
@@ -116,17 +124,31 @@ public class TimeTracker : MonoBehaviour
              * then push to the database the user's playthrough time.
              */
             timeRecord = Math.Round((double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"], 2);
-            _ = UploadTotalData(time);
-            int index = 1;
-            List<Task<string>> tasks = new List<Task<string>>();
-            foreach (float levelTime in levelTimes)
+            _ = UploadTotalData(time);            
+            object[] percentiles = await Task.WhenAll(tasks);
+            foreach (object percentile in percentiles)
             {
-                tasks.Add(FetchPercentile(levelTime, index.ToString()));
-                index++;
+                var dictionary = percentile.ToDictionary();
+                foreach (KeyValuePair<string, object> kvp in dictionary)
+                {
+                    print($"Key = {kvp.Key}, Value = {kvp.Value}");
+                }
+                if (dictionary.ContainsKey("Values"))
+                {
+                    print("Next layer.");
+                    //Type[] arguments = dictionary["Values"].GetType().GetGenericArguments();
+                    //Type keyType = arguments[0];
+                    //Type valueType = arguments[1];
+                    //print(keyType.ToString());
+                    //print(valueType.ToString());
+
+                    Dictionary<string, object> valueDict = dictionary["Values"].ToDictionary();
+                    foreach (KeyValuePair<string, object> kvp2 in valueDict)
+                    {
+                        print($"Key = {kvp2.Key}, Value = {kvp2.Value}");
+                    }
+                }
             }
-            tasks.Add(FetchPercentile(time, "total"));
-            string[] percentiles = await Task.WhenAll(tasks);
-            foreach (string percentile in percentiles) { print(percentile); }
         }
         CreateMessage(Math.Round(time, 2), timeRecord);
     }
@@ -172,13 +194,42 @@ public class TimeTracker : MonoBehaviour
 
     public void Restart() { SceneManager.LoadScene(0); }
 
-    private Task<string> FetchPercentile(float time, string levelNum)
+    private Task<object> FetchPercentile(float time, string levelNum)
     {
         var data = new Dictionary<string, object>();
         data["level"] = levelNum;
         data["time"] = time;
 
         var function = func.GetHttpsCallable("getPercentile");
-        return function.CallAsync(data).ContinueWith( (task) => { return task.Result.ToString(); } );
+
+        return function.CallAsync(data).ContinueWith((task) => {
+            print(JsonConvert.SerializeObject(task.Result.ToDictionary()));
+            return task.Result.Data;
+        });
+    }
+}
+
+// Adapted from https://stackoverflow.com/questions/11576886/how-to-convert-object-to-dictionarytkey-tvalue-in-c
+public static class ObjectToDictionaryHelper
+{
+    public static Dictionary<string, object> ToDictionary(this object source)
+    {
+        return source.ToDictionary<object>();
+    }
+
+    public static Dictionary<string, T> ToDictionary<T>(this object source)
+    {
+        var dictionary = new Dictionary<string, T>();
+        foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(source))
+        {
+            AddPropertyToDictionary<T>(property, source, dictionary);
+        }
+        return dictionary;
+    }
+
+    private static void AddPropertyToDictionary<T>(PropertyDescriptor property, object source, Dictionary<string, T> dictionary)
+    {
+        object value = property.GetValue(source);
+        if (value is T) { dictionary.Add(property.Name, (T)value); }
     }
 }

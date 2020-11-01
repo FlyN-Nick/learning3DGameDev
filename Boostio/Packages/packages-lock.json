@@ -16,6 +16,15 @@
       },
       "url": "https://unityregistry-pa.googleapis.com"
     },
+    "com.google.firebase.firestore": {
+      "version": "6.16.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.google.firebase.app": "6.16.1"
+      },
+      "url": "https://unityregistry-pa.googleapis.com"
+    },
     "com.google.firebase.functions": {
       "version": "6.16.1",
       "depth": 0,

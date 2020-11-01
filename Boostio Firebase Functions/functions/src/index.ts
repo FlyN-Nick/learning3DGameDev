@@ -51,7 +51,7 @@ export const levelDataCreated = functions.firestore
  */
 export const getPercentile = functions.https.onRequest((req, res) =>
 {
-    const percentileReqData: percentileReqObj = req.body || req.query;
+    const percentileReqData: percentileReqObj = req.body.data || req.query;
     db.collection(`levelData/eachLevel/${percentileReqData.level}`).get()
         .then((data) =>
         {
@@ -61,11 +61,16 @@ export const getPercentile = functions.https.onRequest((req, res) =>
                 const time = doc.data() as timeObj;
                 levelTimes.push(time.time);
             });
-            res.status(200).send({ 
-                data: {
-                    percentile: percentile(levelTimes, percentileReqData.time) 
-                }
-            });
+            const calculatedPercentile = percentile(levelTimes, percentileReqData.time);
+            if (percentileReqData.level === "total")
+            {
+                functions.logger.log(`Percentile ${calculatedPercentile.toFixed(3)} calculated for overall playthrough time ${percentileReqData.time}s.`);
+            }
+            else
+            {
+                functions.logger.log(`Percentile ${calculatedPercentile.toFixed(3)} calculated for playthrough time ${percentileReqData.time}s for level #${percentileReqData.level}`);
+            }
+            res.status(200).send( { data: { percentile: calculatedPercentile } } );
         })
         .catch((err) => 
         { 
@@ -101,7 +106,17 @@ function average(arr: number[])
 function updateLevelRecord(level: string, time: timeObj)
 {
     db.doc(`recordStats/${level}`).set(time)
-        .then( (data) => { functions.logger.log(`New record ${time.time.toFixed(3)}s for level #${level}.`); } )
+        .then((data) => 
+        { 
+            if (level === "total")
+            {
+                functions.logger.log(`New record ${time.time.toFixed(3)}s for overall.`); 
+            }
+            else 
+            {
+                functions.logger.log(`New record ${time.time.toFixed(3)}s for level #${level}.`); 
+            }
+        })
         .catch( (err) => { functions.logger.error(err); } );
 }
 
@@ -123,7 +138,17 @@ function updateLevelAverage(level: string)
             const avg = average(levelTimes);
             const avgObj: timeObj = { time: avg };
             db.doc(`levelAverages/${level}`).set(avgObj)
-                .then( (_) => { functions.logger.log(`New average ${avg.toFixed(3)}s for level #${level}.`); } )
+                .then((_) => 
+                { 
+                    if (level === "total")
+                    {
+                        functions.logger.log(`New average ${avg.toFixed(3)}s for overall.`); 
+                    }
+                    else
+                    {
+                        functions.logger.log(`New average ${avg.toFixed(3)}s for level #${level}.`); 
+                    }
+                })
                 .catch( (err) => { functions.logger.error(err); } );
         })
         .catch( (err) => { functions.logger.error(err); } );
