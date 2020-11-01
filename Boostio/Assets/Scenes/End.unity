@@ -303,22 +303,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 542451129, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 542451129, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 563.4156
-      objectReference: {fileID: 0}
-    - target: {fileID: 542451129, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 120.85065
-      objectReference: {fileID: 0}
-    - target: {fileID: 542451129, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 100
-      objectReference: {fileID: 0}
     - target: {fileID: 8417368910874791301, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
       propertyPath: m_Name
       value: Time Tracker

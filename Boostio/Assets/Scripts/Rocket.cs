@@ -9,6 +9,7 @@ public class Rocket : MonoBehaviour
     [SerializeField] private float rcsThrust = 100f;
     [SerializeField] private float mainThrust = 100f;
     [SerializeField] private float levelLoadDelay = 1f;
+    [SerializeField] private float successfullyLandDelay = 1.5f;
 
     [SerializeField] private AudioClip engineThrustSFX = null;
     [SerializeField] private AudioClip deathSFX = null;
@@ -98,7 +99,7 @@ public class Rocket : MonoBehaviour
             if (engineAudioSource.isPlaying) { engineAudioSource.Stop(); }
             if (engineVFX.isPlaying) { engineVFX.Stop(); }
             completionAudioSource.PlayOneShot(successOneSFX);
-            Invoke(nameof(SuccessfullyLand), 1f);
+            Invoke(nameof(SuccessfullyLand), successfullyLandDelay);
         }
         else if (!collision.gameObject.CompareTag("Friendly") && !collision.gameObject.CompareTag("Finish"))
         {

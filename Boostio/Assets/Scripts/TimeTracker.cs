@@ -23,7 +23,7 @@ public class TimeTracker : MonoBehaviour
     private FirebaseFirestore db;
     private FirebaseFunctions func;
 
-    private List<Task<object>> tasks = new List<Task<object>>();
+    private List<decimal> percentiles = new List<decimal>();
 
     private void Awake()
     {
@@ -39,6 +39,10 @@ public class TimeTracker : MonoBehaviour
             canvas.SetActive(false);
             totalNumLevels = SceneManager.sceneCountInBuildSettings;
             levelTimes = new float[totalNumLevels];
+            if (SceneManager.GetActiveScene().buildIndex != 0)
+            {
+                SceneManager.LoadScene(0);
+            }
         }
     }
 
@@ -58,7 +62,6 @@ public class TimeTracker : MonoBehaviour
             {
                 isTrackingTime = false;
                 canvas.SetActive(true);
-                tasks.Add(FetchPercentile(time, "total"));
                 GetLeaderboard();
             }
             else if (currentIndex == 0)
@@ -86,7 +89,7 @@ public class TimeTracker : MonoBehaviour
                 {
                     int levelNum = adjustedIndex + 1;
                     await UploadLevelData(levelTime, levelNum);
-                    tasks.Add(FetchPercentile(levelTime, levelNum.ToString()));
+                    percentiles.Add(await FetchPercentile(levelTime, levelNum.ToString()));
                 }
             }
         }
@@ -104,7 +107,6 @@ public class TimeTracker : MonoBehaviour
 
     private async void GetLeaderboard()
     {
-        double timeRecord = -1d;
         if (InternetAvailable())
         {
             DocumentReference recordDocRef = db.Collection("recordStats").Document("total");
@@ -123,58 +125,47 @@ public class TimeTracker : MonoBehaviour
              * and therefore I want to first fetch the record, 
              * then push to the database the user's playthrough time.
              */
-            timeRecord = Math.Round((double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"], 2);
-            _ = UploadTotalData(time);            
-            object[] percentiles = await Task.WhenAll(tasks);
-            foreach (object percentile in percentiles)
-            {
-                var dictionary = percentile.ToDictionary();
-                foreach (KeyValuePair<string, object> kvp in dictionary)
-                {
-                    print($"Key = {kvp.Key}, Value = {kvp.Value}");
-                }
-                if (dictionary.ContainsKey("Values"))
-                {
-                    print("Next layer.");
-                    //Type[] arguments = dictionary["Values"].GetType().GetGenericArguments();
-                    //Type keyType = arguments[0];
-                    //Type valueType = arguments[1];
-                    //print(keyType.ToString());
-                    //print(valueType.ToString());
-
-                    Dictionary<string, object> valueDict = dictionary["Values"].ToDictionary();
-                    foreach (KeyValuePair<string, object> kvp2 in valueDict)
-                    {
-                        print($"Key = {kvp2.Key}, Value = {kvp2.Value}");
-                    }
-                }
-            }
+            double timeRecord = Math.Round((double) (await recordDocRef.GetSnapshotAsync()).ToDictionary()["time"], 2);
+            await UploadTotalData(time);
+            percentiles.Add(await FetchPercentile(time, "total"));
+            CreateMessage(Math.Round(time, 2), timeRecord, percentiles.ToArray());
         }
-        CreateMessage(Math.Round(time, 2), timeRecord);
+        else { CreateMessage(Math.Round(time, 2)); }
     }
 
-    private void CreateMessage(double userTime, double timeRecord = -1)
+    // TODO: display the stats with a nice UI instead of this
+    private void CreateMessage(double userTime, double timeRecord, decimal[] percentiles)
     {
         string message = $"Time to completion: {userTime} seconds.";
-        if (timeRecord == -1)
+        if (userTime < timeRecord)
         {
-            message += "\nGG WP :D";
+            message += $"\nThat's the fastest playthrough EVER.\nThe old record was {timeRecord} seconds.";
+        }
+        else if (userTime == timeRecord)
+        {
+            message += $"\nThat's the same time as the record!";
         }
         else
         {
-            if (userTime < timeRecord)
+            message += $"\nThe current playthrough time record is {timeRecord} seconds.";
+        }
+        for (int i = 0; i < percentiles.Length; i++)
+        {
+            if (i == percentiles.Length-1)
             {
-                message += $"\nThat's the fastest playthrough EVER.\nThe old record was {timeRecord} seconds.";
-            }
-            else if (userTime == timeRecord)
-            {
-                message += $"\nThat's the same time as the record!";
+                message += $"\n{((int)Math.Round(percentiles[i])).AddSuffix()} percentile overall.";
             }
             else
             {
-                message += $"\nThe current playthrough time record is {timeRecord} seconds.";
+                message += $"\n{((int)Math.Round(percentiles[i])).AddSuffix()} percentile for level #{i+1}.";
             }
         }
+        messageUGUI.text = message;
+    }
+
+    private void CreateMessage(double userTime)
+    {
+        string message = $"Time to completion: {userTime} seconds.\nGG WP :D";
         messageUGUI.text = message;
     }
 
@@ -194,7 +185,7 @@ public class TimeTracker : MonoBehaviour
 
     public void Restart() { SceneManager.LoadScene(0); }
 
-    private Task<object> FetchPercentile(float time, string levelNum)
+    private Task<decimal> FetchPercentile(float time, string levelNum)
     {
         var data = new Dictionary<string, object>();
         data["level"] = levelNum;
@@ -203,9 +194,10 @@ public class TimeTracker : MonoBehaviour
         var function = func.GetHttpsCallable("getPercentile");
 
         return function.CallAsync(data).ContinueWith((task) => {
-            print(JsonConvert.SerializeObject(task.Result.ToDictionary()));
-            return task.Result.Data;
-        });
+            var json = JsonConvert.SerializeObject(task.Result.ToDictionary());
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, decimal>>>(json);
+            return dict["Data"]["percentile"];
+         });
     }
 }
 
@@ -231,5 +223,20 @@ public static class ObjectToDictionaryHelper
     {
         object value = property.GetValue(source);
         if (value is T) { dictionary.Add(property.Name, (T)value); }
+    }
+}
+
+// Adapted from https://stackoverflow.com/questions/13627308/add-st-nd-rd-and-th-ordinal-suffix-to-a-number
+public static class NumberSuffixHelper
+{
+    public static string AddSuffix(this int num)
+    {
+        var lastDig = num % 10;
+        var lastTwoDig = num % 100;
+        var stringVer = num.ToString();
+        if (lastDig == 1 && lastTwoDig != 11) { return stringVer + "st"; }
+        else if (lastDig == 2 && lastTwoDig != 12) { return stringVer + "nd"; }
+        else if (lastDig == 3 && lastTwoDig != 13) { return stringVer + "rd"; }
+        else { return stringVer + "th"; }
     }
 }
