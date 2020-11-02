@@ -23,7 +23,7 @@ public class TimeTracker : MonoBehaviour
     private FirebaseFirestore db;
     private FirebaseFunctions func;
 
-    private List<decimal> percentiles = new List<decimal>();
+    private List<float> percentiles = new List<float>();
 
     private void Awake()
     {
@@ -134,7 +134,7 @@ public class TimeTracker : MonoBehaviour
     }
 
     // TODO: display the stats with a nice UI instead of this
-    private void CreateMessage(double userTime, double timeRecord, decimal[] percentiles)
+    private void CreateMessage(double userTime, double timeRecord, float[] percentiles)
     {
         string message = $"Time to completion: {userTime} seconds.";
         if (userTime < timeRecord)
@@ -185,7 +185,7 @@ public class TimeTracker : MonoBehaviour
 
     public void Restart() { SceneManager.LoadScene(0); }
 
-    private Task<decimal> FetchPercentile(float time, string levelNum)
+    private Task<float> FetchPercentile(float time, string levelNum)
     {
         var data = new Dictionary<string, object>();
         data["level"] = levelNum;
@@ -195,7 +195,7 @@ public class TimeTracker : MonoBehaviour
 
         return function.CallAsync(data).ContinueWith((task) => {
             var json = JsonConvert.SerializeObject(task.Result.ToDictionary());
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, decimal>>>(json);
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, float>>>(json);
             return dict["Data"]["percentile"];
          });
     }
