@@ -9,6 +9,7 @@ using Firebase.Firestore;
 using Firebase.Functions;
 using Newtonsoft.Json;
 
+[DisallowMultipleComponent]
 public class TimeTracker : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI messageUGUI = null;
@@ -17,6 +18,7 @@ public class TimeTracker : MonoBehaviour
     private int rememberedSceneIndex = 0;
     private int totalNumLevels;
     private bool isTrackingTime = true;
+    private bool loadedStart = false; 
     private float time = 0f;
     private float[] levelTimes;
 
@@ -39,10 +41,11 @@ public class TimeTracker : MonoBehaviour
             canvas.SetActive(false);
             totalNumLevels = SceneManager.sceneCountInBuildSettings;
             levelTimes = new float[totalNumLevels];
-            if (SceneManager.GetActiveScene().buildIndex != 0)
+            if (SceneManager.GetActiveScene().buildIndex != 0 && !loadedStart)
             {
                 SceneManager.LoadScene(0);
             }
+            loadedStart = true;
         }
     }
 
@@ -131,6 +134,7 @@ public class TimeTracker : MonoBehaviour
             CreateMessage(Math.Round(time, 2), timeRecord, percentiles.ToArray());
         }
         else { CreateMessage(Math.Round(time, 2)); }
+        percentiles = new List<float>();
     }
 
     // TODO: display the stats with a nice UI instead of this

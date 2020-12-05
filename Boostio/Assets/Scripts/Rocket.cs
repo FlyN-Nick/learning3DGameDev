@@ -31,7 +31,15 @@ public class Rocket : MonoBehaviour
     private enum State { alive, dead, transcending, transcended }
     State state = State.alive;
 
-    private void Start() { rigidBody = GetComponent<Rigidbody>(); }
+    //private Vector3 initialPos = new Vector3(0, 2.55f, 0);
+    //rivate Quaternion initialRot = new Quaternion(0, 0, 0, 1);
+
+    private void Start()
+    {
+        rigidBody = GetComponent<Rigidbody>();
+        //initialPos = transform.position;
+        //initialRot = transform.rotation;
+    }
 
     private void Update()
     {
@@ -134,7 +142,16 @@ public class Rocket : MonoBehaviour
         SceneManager.LoadScene(newIndex);
     }
 
-    void ReloadLevel() { SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); }
+    void ReloadLevel()
+    {
+        /*state = State.alive;
+        transform.position = initialPos;
+        transform.rotation = initialRot;
+        rigidBody.velocity = new Vector3(0, 0, 0);
+        rigidBody.angularVelocity = new Vector3(0, 0, 0);
+        completionAudioSource.Stop();*/
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
 
     void Restart() { SceneManager.LoadScene(0); }
 }
