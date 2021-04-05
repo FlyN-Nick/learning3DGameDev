@@ -1,4 +1,4 @@
 # learning3DGameDev
-I am spending a year making various little games in Unity and Unreal to learn 3D game-dev. 
+I spent a year learning 3D game development with both Unity and Unreal.
 
 Check out my games: [My Itch.io Profile](https://flyn-nick.itch.io/)
