@@ -310,10 +310,25 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Time to completion: x seconds.
 
-    That''s the fastest playthrough EVER.
+    The current playthrough time record
+    is ab.cd seconds.
 
-    The
-    old record was y seconds.'
+    xyth percentile for level #1.
+
+    xyth percentile for
+    level #2.
+
+    xyth percentile for level #3.
+
+    xyth percentile for level #4.
+
+    xyth
+    percentile for level #5.
+
+    xyth percentile for level #6.
+
+    xyth percentile
+    overall.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 125cb55b44b24c4393181402bc6200e6, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 125cb55b44b24c4393181402bc6200e6, type: 2}
