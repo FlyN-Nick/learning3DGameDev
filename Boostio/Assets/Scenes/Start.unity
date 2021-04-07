@@ -1402,7 +1402,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.51000005, y: 0.549}
   m_AnchorMax: {x: 0.51000005, y: 0.549}
-  m_AnchoredPosition: {x: 0.000022888184, y: -157}
+  m_AnchoredPosition: {x: 0.000030517578, y: -157}
   m_SizeDelta: {x: 172.08328, y: 77.22731}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &752212888
@@ -2174,6 +2174,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 752212887, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.000030517578
+      objectReference: {fileID: 0}
+    - target: {fileID: 752212887, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -281
+      objectReference: {fileID: 0}
     - target: {fileID: 8417368910874791301, guid: 90994fe4d8fa949338e245cad25c44c8, type: 3}
       propertyPath: m_Name
       value: Time Tracker
